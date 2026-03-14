@@ -10,12 +10,14 @@ export function activate(context: vscode.ExtensionContext) {
 		}),
 	);
 
+	const sidebarProvider = new SidebarViewProvider(context, context.extensionUri);
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(
 			SidebarViewProvider.viewType,
-			new SidebarViewProvider(context.extensionUri)
+			sidebarProvider
 		),
 	);
+	context.subscriptions.push(sidebarProvider);
 }
 
 export function deactivate() {}

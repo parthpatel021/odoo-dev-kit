@@ -196,9 +196,6 @@ textarea::placeholder {
 	justify-content: space-between;
 	margin-bottom: 8px;
 	margin-top: 16px;
-}
-
-.section-title {
 	font-size: 13px;
 	font-weight: 600;
 }
@@ -229,6 +226,83 @@ textarea::placeholder {
 
 .add-btn .codicon {
     font-size: 16px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    margin: 6px 0 12px;
+    align-items: center;
+}
+
+.action-right {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.icon-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.primary-btn,
+.danger-btn {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    background: var(--vscode-button-background);
+    cursor: pointer;
+}
+
+.primary-btn:hover,
+.danger-btn:hover {
+    background: var(--vscode-button-hoverBackground);
+}
+
+.danger-btn {
+    border-color: var(--vscode-errorForeground);
+    background: var(--vscode-errorForeground);
+    color: var(--vscode-editor-background);
+}
+
+.stop-btn {
+    border-color: var(--vscode-input-border);
+    background: transparent;
+    color: var(--vscode-foreground);
+}
+
+.stop-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.stop-btn.active {
+    border-color: var(--vscode-errorForeground);
+    background: var(--vscode-errorForeground);
+    color: var(--vscode-editor-background);
+}
+
+.running-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--vscode-descriptionForeground);
+    opacity: 0.5;
+    align-self: center;
+    margin-left: 4px;
+}
+
+.running-indicator.active {
+    background: #2ecc71;
+    opacity: 1;
+    box-shadow: 0 0 6px rgba(46, 204, 113, 0.8);
 }
 
 /* List */
@@ -294,6 +368,48 @@ textarea::placeholder {
     white-space: nowrap;
 }
 
+.empty-state {
+    padding: 10px 12px;
+    margin: 8px 0 14px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--vscode-descriptionForeground);
+}
+
+.command-wrap {
+    position: relative;
+}
+
+.command-box {
+    margin: 8px 0 16px;
+    padding: 10px 40px 10px 12px;
+    border-radius: 6px;
+    background: var(--vscode-editor-background);
+    border: 1px solid var(--vscode-input-border);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.copy-btn {
+    position: absolute;
+    right: 8px;
+    bottom: 22px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    background: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: 1px solid var(--vscode-button-background);
+    cursor: pointer;
+}
+
+.copy-btn:hover {
+    background: var(--vscode-button-hoverBackground);
+}
+
+.run-command-section {
+    padding-top: 12px;
+}
+
 .accordion {
     border-bottom: 1px solid rgba(255,255,255,0.08);
 }
@@ -332,4 +448,33 @@ textarea::placeholder {
 
 .accordion-title {
     font-size: 14px;
+}
+
+
+.options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.option-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 8px;
+    border-radius: 4px;
+}
+
+.option-row:hover {
+    background: var(--vscode-list-hoverBackground);
+}
+
+.cli-key {
+    width: 120px;
+    font-family: monospace;
+    color: var(--vscode-textLink-foreground);
+}
+
+.cli-input {
+    flex: 1;
 }
