@@ -1,6 +1,21 @@
 import * as vscode from "vscode";
-import { exec } from "child_process";
+import { exec, execFile } from "child_process";
 import { getNonce } from "../utils/nonce";
+
+function getVersionFromBranch(branch: string) {
+	if (branch === "master" || branch.startsWith("master-")) {
+		return "master";
+	}
+	const saasMatch = branch.match(/(saas-\d+\.\d+)/);
+	if (saasMatch) {
+		return saasMatch[1];
+	}
+	const versionMatch = branch.match(/(\d+\.0)/);
+	if (versionMatch) {
+		return versionMatch[1];
+	}
+	return branch;
+}
 
 export class SidebarViewProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = "odoo-dev-kit-sidebar";
@@ -146,6 +161,51 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
 						);
 					});
 					break;
+				case "resolveDbNameFromAddon": {
+					const addonPath = String(message.addonPath || "").trim();
+					const requestId = message.requestId;
+					if (!addonPath) {
+						webviewView.webview.postMessage({
+							command: "resolvedDbName",
+							requestId,
+							error: "Addon path is missing.",
+						});
+						break;
+					}
+					execFile(
+						"git",
+						["-C", addonPath, "rev-parse", "--abbrev-ref", "HEAD"],
+						(error, stdout, stderr) => {
+							if (error) {
+								webviewView.webview.postMessage({
+									command: "resolvedDbName",
+									requestId,
+									error: (stderr || error.message || "").trim(),
+								});
+								return;
+							}
+							const branch = String(stdout || "").trim();
+							if (!branch) {
+								webviewView.webview.postMessage({
+									command: "resolvedDbName",
+									requestId,
+									error: "Could not detect branch name.",
+								});
+								return;
+							}
+							const version = getVersionFromBranch(branch);
+							const dbName = `testdb-${version}`;
+							webviewView.webview.postMessage({
+								command: "resolvedDbName",
+								requestId,
+								branch,
+								version,
+								dbName,
+							});
+						},
+					);
+					break;
+				}
 				case "persistState":
 					await this._context.workspaceState.update(
 						"odooDevKit.webviewState",

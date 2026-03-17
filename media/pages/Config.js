@@ -40,6 +40,7 @@ export class Config extends Component {
             cliOptions: {},
             pythonVenv: "",
             odooBinPath: "",
+            autoDetectDbName: true,
         };
 
         if (savedState?.config) {
@@ -98,6 +99,16 @@ export class Config extends Component {
 
             <div class="section-title">Environment</div>
             <div class="options-list">
+                <div class="option-row">
+                    <div class="cli-key">Auto-detect DB name</div>
+                    <div class="cli-input">
+                        <Input
+                            type="'checkbox'"
+                            value="state.config.autoDetectDbName !== false"
+                            onChange="(val) => this.state.config.autoDetectDbName = val"
+                        />
+                    </div>
+                </div>
                 <div class="option-row">
                     <div class="cli-key">Python venv</div>
                     <div class="cli-input">

@@ -6,7 +6,9 @@ VS Code sidebar to configure and run Odoo quickly with a generated command, serv
 
 - Configure Odoo addons, CLI options, and environment paths.
 - Generate a ready-to-run Odoo command.
-- Run/stop the server and drop the database from the sidebar.
+- Run/stop the server from the sidebar.
+- Drop the current database and re-run the server in one click.
+- Auto-detect a default database name from the first addon branch (optional).
 
 ### Screenshots
 | Config | Server |
@@ -19,6 +21,15 @@ VS Code sidebar to configure and run Odoo quickly with a generated command, serv
 - Odoo source directory and addons paths.
 - PostgreSQL tools if you use the Drop DB action.
 
-## Extension Settings
+## Server Actions
 
-No settings at the moment.
+- **Run server**: runs Odoo and includes `-u` only (update mode).
+- **Drop DB and run**: drops the current database and runs Odoo with `-i` only (init mode).
+
+## Library Usage
+
+- **owl**: used to build the sidebar UI.
+
+## License
+
+MIT

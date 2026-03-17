@@ -8,6 +8,8 @@ export class Server extends Component {
     static components = { Input, Accordion };
 
     setup() {
+        this._dbRequestId = 0;
+        this._lastAddonPath = "";
         this.cliOptions = cliOptions;
 
         const savedState = this.props.vscode.getState() || {};
@@ -18,9 +20,11 @@ export class Server extends Component {
                 cliOptions: {},
                 pythonVenv: "",
                 odooBinPath: "",
+                autoDetectDbName: true,
                 ...(savedState.config || {}),
             },
             params: savedState.params || {},
+            runMode: "update",
             isRunning: false,
         });
 
@@ -49,12 +53,62 @@ export class Server extends Component {
                     if (message?.command === "serverStatus") {
                         this.state.isRunning = !!message.running;
                     }
+                    if (message?.command === "resolvedDbName") {
+                        if (message.requestId !== this._dbRequestId) {
+                            return;
+                        }
+                        const currentDb = (this.state.params.database || "").trim();
+                        if (currentDb) {
+                            return;
+                        }
+                        if (message.dbName) {
+                            this.state.params.database = message.dbName;
+                        }
+                    }
                 };
                 window.addEventListener("message", handler);
                 return () => window.removeEventListener("message", handler);
             },
             () => []
         );
+
+        useEffect(
+            () => {
+                if (this.state.config.autoDetectDbName === false) {
+                    return;
+                }
+                const currentDb = (this.state.params.database || "").trim();
+                if (currentDb) {
+                    return;
+                }
+                const addonPath = this.getFirstAddonPath();
+                if (!addonPath) {
+                    return;
+                }
+                if (addonPath === this._lastAddonPath) {
+                    return;
+                }
+                this._lastAddonPath = addonPath;
+                const requestId = ++this._dbRequestId;
+                this.props.vscode.postMessage({
+                    command: "resolveDbNameFromAddon",
+                    addonPath,
+                    requestId,
+                });
+            },
+            () => [JSON.stringify(this.state.config.addons), (this.state.params.database || "").trim()]
+        );
+    }
+
+    getFirstAddonPath() {
+        const addons = this.state.config.addons || [];
+        for (const addon of addons) {
+            const path = (addon.path || "").trim();
+            if (path) {
+                return path;
+            }
+        }
+        return "";
     }
 
     getEnabledOptions(group) {
@@ -106,9 +160,13 @@ export class Server extends Component {
     getCommandArgs() {
         const args = [];
         const enabledOptions = this.getEnabledOptionsList();
+        const runMode = this.state.runMode || "update";
 
         for (const opt of enabledOptions) {
             if (opt.name === "addons-path") {
+                continue;
+            }
+            if (opt.name === "init" || opt.name === "update") {
                 continue;
             }
             const value = this.state.params[opt.name];
@@ -122,6 +180,21 @@ export class Server extends Component {
                 continue;
             }
             args.push(opt.key, this.formatValue(value));
+        }
+
+        const initOpt = enabledOptions.find(opt => opt.name === "init");
+        const updateOpt = enabledOptions.find(opt => opt.name === "update");
+        if (runMode === "init" && initOpt) {
+            const initValue = this.state.params[initOpt.name];
+            if (initValue !== undefined && initValue !== null && initValue !== "") {
+                args.push(initOpt.key, this.formatValue(initValue));
+            }
+        }
+        if (runMode !== "init" && updateOpt) {
+            const updateValue = this.state.params[updateOpt.name];
+            if (updateValue !== undefined && updateValue !== null && updateValue !== "") {
+                args.push(updateOpt.key, this.formatValue(updateValue));
+            }
         }
 
         const addonsParam = (this.state.params["addons-path"] || "").trim();
@@ -235,6 +308,7 @@ export class Server extends Component {
             });
             return;
         }
+        this.state.runMode = "update";
         const command = this.getRunCommand();
         if (!command) {
             this.props.vscode.postMessage({
@@ -246,6 +320,40 @@ export class Server extends Component {
         this.props.vscode.postMessage({
             command: "runCommand",
             text: command,
+        });
+        this.state.isRunning = true;
+    }
+
+    async dropDbAndRun() {
+        const validationErrors = this.validateRunConfiguration();
+        if (validationErrors.length) {
+            this.props.vscode.postMessage({
+                command: "showWarning",
+                text: `Cannot run server: ${validationErrors.join(" ")}`,
+            });
+            return;
+        }
+        const dbName = (this.state.params.database || "").trim();
+        if (!dbName) {
+            this.props.vscode.postMessage({
+                command: "showWarning",
+                text: "Set a database name first.",
+            });
+            return;
+        }
+        this.state.runMode = "init";
+        const runCommand = this.getRunCommand();
+        const dropCommand = this.getDropDbCommand();
+        if (!runCommand || !dropCommand) {
+            this.props.vscode.postMessage({
+                command: "showMessage",
+                text: "No command to run. Configure options first.",
+            });
+            return;
+        }
+        this.props.vscode.postMessage({
+            command: "runCommand",
+            text: `${dropCommand} && ${runCommand}`,
         });
         this.state.isRunning = true;
     }
@@ -306,10 +414,10 @@ export class Server extends Component {
             <div class="section-title">Actions</div>
             <div class="action-buttons">
                 <button class="icon-btn primary-btn" t-on-click="runServer" title="Run server">
-                    <i class="codicon codicon-run"/>
+                    <i class="codicon codicon-debug-start"/>
                 </button>
-                <button class="icon-btn danger-btn" t-on-click="dropDb" title="Drop database">
-                    <i class="codicon codicon-trash"/>
+                <button class="icon-btn danger-btn" t-on-click="dropDbAndRun" title="Drop DB and run server">
+                    <i class="codicon codicon-debug-restart"/>
                 </button>
                 <div class="action-right">
                     <button
