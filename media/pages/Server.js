@@ -16,7 +16,7 @@ export class Server extends Component {
 
         this.state = useState({
             config: {
-                addons: [{ id: 1, name: "", path: "", versionChange: false, enabled: true }],
+                addons: [{ id: 1, name: "", path: "", enabled: true }],
                 cliOptions: {},
                 pythonVenv: "",
                 odooBinPath: "",

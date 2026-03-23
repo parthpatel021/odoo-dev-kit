@@ -79,12 +79,12 @@ export async function getPreferredRemote(repoPath: string): Promise<string> {
 
 export async function checkoutBranch(repoPath: string, branch: string): Promise<void> {
     try {
-        await execCommand(`git fetch --all`, repoPath);
         const remote = await findRemoteWithBranch(repoPath, branch);
         const targetBranch = remote ? branch : getVersionFromBranch(branch);
-
+        
         await execCommand(`git checkout ${targetBranch}`, repoPath);
         // Pull latest using the tracking remote
+        await execCommand(`git fetch --all`, repoPath);
         const pullRemote = await getPreferredRemote(repoPath);
         await execCommand(`git pull ${pullRemote} ${targetBranch} --rebase`, repoPath).catch(() => {});
     } catch (err: any) {

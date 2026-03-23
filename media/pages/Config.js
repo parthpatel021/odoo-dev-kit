@@ -36,7 +36,7 @@ export class Config extends Component {
 
     getInitialConfigState(savedState) {
         const defaultState = {
-            addons: [{ id: 1, name: "", path: "", versionChange: false, enabled: true }],
+            addons: [{ id: 1, name: "", path: "", enabled: true }],
             cliOptions: {},
             pythonVenv: "",
             odooBinPath: "",
@@ -55,7 +55,6 @@ export class Config extends Component {
             id: Date.now(),
             name: "",
             path: "",
-            versionChange: false,
             enabled: true,
         });
     }
@@ -140,9 +139,6 @@ export class Config extends Component {
 
                         <Input type="'text'" value="addon.path" placeholder="'/home/user/odoo/custom_addons'"
                             onChange="(val) => this.updateAddon(addon.id, 'path', val)" />
-
-                        <Input type="'checkbox'" value="addon.versionChange"
-                            onChange="(val) => this.updateAddon(addon.id, 'versionChange', val)" />
 
                         <button class="delete-btn" title="Delete"
                             t-on-click="() => this.removePath(addon.id)">
