@@ -1,6 +1,6 @@
-import { Server } from "./pages/Server.js";
-import { Config } from "./pages/Config.js";
-import { GitControl } from "./pages/GitControl.js";
+import { Server } from "./pages/server/Server.js";
+import { Config } from "./pages/config/Config.js";
+import { GitControl } from "./pages/git-control/GitControl.js";
 
 const { Component, useState, useEffect, mount, xml } = owl;
 const vscode = acquireVsCodeApi();
